@@ -34,6 +34,16 @@ public class CreateUserNioServlet extends HttpServlet {
         service.createUserCompletelyNIO(userData).subscribe(res -> wrapResponse(JsonConverter.getInstance().getJsonOf(res)));
 
         //arrange outputstream and set listener/callbacks
+        nioResponse(request, response, jsonResponse);
+
+    }
+
+
+    private synchronized void wrapResponse(String jsonResponse){
+        this.jsonResponse = jsonResponse;
+    }
+
+    private synchronized void nioResponse(HttpServletRequest request, HttpServletResponse response, String jsonResponse) throws IOException {
         ByteBuffer finalContent = ByteBuffer.wrap(jsonResponse.getBytes());
         AsyncContext async = request.startAsync();
         response.setContentType("application/json");
@@ -60,8 +70,5 @@ public class CreateUserNioServlet extends HttpServlet {
         });
     }
 
-    private synchronized void wrapResponse(String jsonResponse){
-        this.jsonResponse = jsonResponse;
-    }
 
 }

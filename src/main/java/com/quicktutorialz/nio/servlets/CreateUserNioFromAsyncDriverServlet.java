@@ -1,6 +1,5 @@
 package com.quicktutorialz.nio.servlets;
 
-import com.google.gson.Gson;
 import com.quicktutorialz.nio.entities.UserData;
 import com.quicktutorialz.nio.services.ReactiveService;
 import com.quicktutorialz.nio.services.ReactiveServiceImpl;
@@ -35,6 +34,16 @@ public class CreateUserNioFromAsyncDriverServlet extends HttpServlet {
         service.createUserNIOfromAsync(userData).subscribe(res -> wrapResponse(JsonConverter.getInstance().getJsonOf(res)));
 
         //arrange outputstream and set listener/callbacks
+        nioResponse(request, response, jsonResponse);
+
+    }
+
+
+    private synchronized void wrapResponse(String jsonResponse){
+        this.jsonResponse = jsonResponse;
+    }
+
+    private synchronized void nioResponse(HttpServletRequest request, HttpServletResponse response, String jsonResponse) throws IOException {
         ByteBuffer finalContent = ByteBuffer.wrap(jsonResponse.getBytes());
         AsyncContext async = request.startAsync();
         response.setContentType("application/json");
@@ -59,10 +68,6 @@ public class CreateUserNioFromAsyncDriverServlet extends HttpServlet {
                 async.complete();
             }
         });
-    }
-
-    private synchronized void wrapResponse(String jsonResponse){
-        this.jsonResponse = jsonResponse;
     }
 
 }
