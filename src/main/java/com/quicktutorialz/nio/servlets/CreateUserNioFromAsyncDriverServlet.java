@@ -20,8 +20,6 @@ import java.nio.ByteBuffer;
  */
 public class CreateUserNioFromAsyncDriverServlet extends HttpServlet {
 
-    private volatile String jsonResponse;
-
     private final ReactiveService service = ReactiveServiceImpl.getInstance();
 
     @Override
@@ -31,16 +29,7 @@ public class CreateUserNioFromAsyncDriverServlet extends HttpServlet {
         UserData userData = (UserData) JsonConverter.getInstance().getDataFromBodyRequest(request, UserData.class);
 
         //elaborate and subscribe to response
-        service.createUserNIOfromAsync(userData).subscribe(res -> wrapResponse(JsonConverter.getInstance().getJsonOf(res)));
-
-        //arrange outputstream and set listener/callbacks
-        nioResponse(request, response, jsonResponse);
-
-    }
-
-
-    private synchronized void wrapResponse(String jsonResponse){
-        this.jsonResponse = jsonResponse;
+        service.createUserNIOfromAsync(userData).subscribe(res -> nioResponse(request, response, JsonConverter.getInstance().getJsonOf(res)));
     }
 
     private synchronized void nioResponse(HttpServletRequest request, HttpServletResponse response, String jsonResponse) throws IOException {

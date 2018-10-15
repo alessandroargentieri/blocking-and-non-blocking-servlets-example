@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
  */
 public class CreateUserNioServlet extends HttpServlet {
 
-    private volatile String jsonResponse;
+    //private volatile String jsonResponse;
 
     private final ReactiveService service = ReactiveServiceImpl.getInstance();
 
@@ -31,20 +31,12 @@ public class CreateUserNioServlet extends HttpServlet {
         UserData userData = (UserData) JsonConverter.getInstance().getDataFromBodyRequest(request, UserData.class);
 
         //elaborate and subscribe to response
-        service.createUserCompletelyNIO(userData).subscribe(res -> wrapResponse(JsonConverter.getInstance().getJsonOf(res)));
-
-        //arrange outputstream and set listener/callbacks
-        nioResponse(request, response, jsonResponse);
-
+        service.createUserCompletelyNIO(userData)
+                .subscribe(res -> nioResponse(request, response, JsonConverter.getInstance().getJsonOf(res)));
     }
 
-
-    private synchronized void wrapResponse(String jsonResponse){
-        this.jsonResponse = jsonResponse;
-    }
-
-    private synchronized void nioResponse(HttpServletRequest request, HttpServletResponse response, String jsonResponse) throws IOException {
-        ByteBuffer finalContent = ByteBuffer.wrap(jsonResponse.getBytes());
+    private synchronized void nioResponse(HttpServletRequest request, HttpServletResponse response, final String jsonResponse) throws IOException {
+        final ByteBuffer finalContent = ByteBuffer.wrap(jsonResponse.getBytes());
         AsyncContext async = request.startAsync();
         response.setContentType("application/json");
         ServletOutputStream out = response.getOutputStream();
